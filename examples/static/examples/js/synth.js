@@ -14,6 +14,9 @@ var gui = {}
 
 function gui_init() {
 
+	// random color generated on init
+	gui.color = "hsl(" + Math.floor(Math.random() * 360) + " ,100%, 50%)";
+
 	var height = 150,
 		width = $("#content").width();
 
@@ -159,11 +162,12 @@ function play_note(x, y) {
 		.attr("cx", gui.x.invert(x))
 		.attr("cy", gui.y.invert(y))
 		.attr("r", 3)
-		.attr("fill", "rgba(30, 30, 255, 0.8)")
+		.attr("fill", gui.color)
+		.attr("opacity", 1)
 		.transition()
 		.duration(500)
-		.attr("r", 30)
-		.attr("fill", "rgba(30, 30, 255, 0)")
+		.attr("r", 60)
+		.attr("opacity", 0)
 		.remove();
 
 	// create audio nodes
@@ -175,11 +179,12 @@ function play_note(x, y) {
 	gain.connect(audio.context.destination);
 
 	// use x and y values
-	gain.gain.value = y;
 	var now = audio.context.currentTime;
-	gain.gain.setTargetAtTime(0, now, 0.2);
+	gain.gain.setValueAtTime(y, now);
+	gain.gain.linearRampToValueAtTime(0, now + 1);
 	oscillator.frequency.setValueAtTime(audio.freq_scale(x), now);
 
-	// and play
-	oscillator.start(0);
+	// play and stop
+	oscillator.start(now);
+	oscillator.stop(now + 1);
 }
