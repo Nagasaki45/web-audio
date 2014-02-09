@@ -7,7 +7,7 @@ var gui = {}
 function gui_init() {
 
 	var height = 150,
-		width = 500;
+		width = $("#content").width();
 
 	// svg element
 	gui.svg = d3.select(".synth")
