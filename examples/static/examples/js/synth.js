@@ -85,21 +85,17 @@ $( document ).ready(function() {
 		gui.mouse_x = gui.x(d3.mouse(this)[0])
 		gui.mouse_y = gui.y(d3.mouse(this)[1])
 
-		// circle manipulation
-		if (typeof gui.circle == 'undefined') {  // runs at first creation
-			gui.circle = gui.svg.append("circle")
-				.attr("cx", gui.x.invert(gui.mouse_x))
-				.attr("cy", gui.y.invert(gui.mouse_y))
-				.attr("r", 10);
-		} else {  // runs after firt creation
-			gui.circle.attr("cx", gui.x.invert(gui.mouse_x))
-				.attr("cy", gui.y.invert(gui.mouse_y));
-		}
-		gui.circle
+		// circle creation, transition and removal
+		var circle = gui.svg.append("circle")
+			.attr("cx", gui.x.invert(gui.mouse_x))
+			.attr("cy", gui.y.invert(gui.mouse_y))
+			.attr("r", 3)
 			.attr("fill", "rgba(30, 30, 255, 0.8)")
 			.transition()
 			.duration(500)
-			.attr("fill", "rgba(30, 30, 255, 0)");
+			.attr("r", 30)
+			.attr("fill", "rgba(30, 30, 255, 0)")
+			.remove();
 
 		// audio update
 		audio.gain.gain.value = gui.mouse_y;
