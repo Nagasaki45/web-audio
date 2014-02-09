@@ -1,7 +1,7 @@
 import json
 
 from django.http import HttpResponse
-from django.views import generic
+from django.shortcuts import render
 from django.conf import settings
 
 # Setting up pusher service
@@ -15,12 +15,15 @@ p = pusher.Pusher(
 
 
 # Create your views here.
-class IndexView(generic.TemplateView):
-	template_name = 'examples/index.html'
+def index(request):
+    return render(request, 'examples/index.html')
 
 
 def click(request):
-	x = request.GET.get("x")
-	y = request.GET.get("y")
-	p['clients_channel'].trigger('click', dict(x=x, y=y))
-	return HttpResponse(json.dumps(dict(success=True)))
+    x = request.GET.get('x')
+    y = request.GET.get('y')
+    csrftoken = request.COOKIES.get('csrftoken')
+    p['clients_channel'].trigger('click', dict(x=x,
+                                               y=y,
+                                               csrftoken=csrftoken))
+    return HttpResponse(json.dumps(dict(success=True)))

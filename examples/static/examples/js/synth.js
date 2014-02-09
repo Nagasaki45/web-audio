@@ -5,6 +5,7 @@
 var pusher = new Pusher('faeca2549c7ec94a3faa');
 pusher.clients_channel = pusher.subscribe('clients_channel');
 
+
 //---------------------------------------------------------
 //		GUI INIT
 //---------------------------------------------------------
@@ -58,7 +59,6 @@ function gui_init() {
 		.attr("y", height - 10)
 		.attr("id", "mute-text")
 		.text("Mute web users");
-
 }
 
 gui_init();
@@ -80,7 +80,6 @@ function audio_init() {
 	audio.freq_scale = d3.scale.pow()
 		.domain([0, 1])
 		.range([100, 5000]);
-
 }
 
 audio_init();
@@ -127,8 +126,8 @@ $( document ).ready(function() {
 			click_url,
 			{x: gui.mouse_x, y: gui.mouse_y}
 		);
-		
 	});
+
 
 	//---------------------------------------------------------
 	//		PUSHER HANDLER
@@ -138,8 +137,9 @@ $( document ).ready(function() {
 
 		// check if web users mute is off
 		if (d3.select("#mute").classed("mute-off")) {
+
 			// play note only if not the message sender
-			if (data.x != gui.mouse_x && data.y != gui.mouse_y) {
+			if (data.csrftoken != $.cookie('csrftoken')) {
 				play_note(data.x, data.y);
 			}
 		}
