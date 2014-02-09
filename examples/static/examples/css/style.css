@@ -1,7 +1,15 @@
-.synth rect {
-	fill: rgba(30, 160, 30, 0.5);
+body {
+	padding-top: 50px;
 }
 
-body {
-  padding-top: 50px;
+rect#mute {
+	stroke: black;
+	stroke-width: stroke_width;
+}
+
+rect#mute.mute-on {
+	fill: black;
+}
+rect#mute.mute-off {
+	fill: white;
 }
