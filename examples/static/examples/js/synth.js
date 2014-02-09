@@ -79,7 +79,7 @@ function audio_init() {
 	// audio logaritmic scale
 	audio.freq_scale = d3.scale.pow()
 		.domain([0, 1])
-		.range([100, 5000]);
+		.range([200, 5000]);
 }
 
 audio_init();
