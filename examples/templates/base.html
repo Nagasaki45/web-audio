@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+
+<html>
+<head>
+
+<title>My first web synth</title>
+
+<link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.min.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "examples/css/style.css" %}">
+	
+</head>
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="{% url "examples:index" %}">Web-Audio</a>
+		</div>
+		<div class="collapse navbar-collapse">
+			<ul class="nav navbar-nav">
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Usefull links <b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li class="dropdown-header">API</li>
+						<li><a href="http://www.w3.org/TR/webaudio/">Web Audio API</a></li>
+						<li class="divider"></li>
+						<li class="dropdown-header">Learning materials</li>
+						<li><a href="http://www.html5rocks.com/en/tutorials/webaudio/intro/">"Getting Started with" tutorial by Boris Smus</a></li>
+						<li><a href="http://chimera.labs.oreilly.com/books/1234000001552/index.html">Free online book by Boris Smus</a></li>
+					</ul>
+				</li>
+			</ul>
+		</div><!--/.nav-collapse -->
+	</div>
+</div>
+
+<div class="container">
+	{% block content %}
+	{% endblock %}
+</div>
+
+<script type="text/javascript" src="{% static "js/jquery-2.1.0.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/bootstrap.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/d3.v3.min.js" %}"></script>
+<script type="text/javascript" src="{% static "examples/js/synth.js" %}"></script>
+
+</body>
+</html>

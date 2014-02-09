@@ -1,3 +1,7 @@
 .synth rect {
 	fill: rgba(30, 160, 30, 0.5);
 }
+
+body {
+  padding-top: 50px;
+}

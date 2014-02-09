@@ -1,23 +1,9 @@
-<!DOCTYPE html>
-{% load staticfiles %}
+{% extends "base.html" %}
 
-<html>
-<head>
+{% block content %}
 
-<title>My first web synth</title>
+<h1>My first web synth</h1>
+<p>Built with the <a href="http://www.w3.org/TR/webaudio/">web audio API</a></p>
+<div class="synth"></div>
 
-<link rel="stylesheet" type="text/css" href="{% static "examples/css/style.css" %}">
-	
-</head>
-<body>
-
-	<h1>My first web synth</h1>
-	<p>Built with the <a href="http://www.w3.org/TR/webaudio/">web audio API</a></p>
-	<div class="synth"></div>
-
-<script type="text/javascript" src="{% static "js/d3.v3.min.js" %}"></script>
-<script type="text/javascript" src="{% static "js/jquery-2.1.0.min.js" %}"></script>
-<script type="text/javascript" src="{% static "examples/js/synth.js" %}"></script>
-
-</body>
-</html>
+{% endblock %}
