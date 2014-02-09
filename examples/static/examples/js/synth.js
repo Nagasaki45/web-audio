@@ -76,16 +76,6 @@ function audio_init() {
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	audio.context = new AudioContext();
 
-	// source
-	audio.oscillator = audio.context.createOscillator()
-
-	// gain
-	audio.gain = audio.context.createGainNode();
-
-	// audio route
-	audio.oscillator.connect(audio.gain);
-	audio.gain.connect(audio.context.destination);
-
 	// audio logaritmic scale
 	audio.freq_scale = d3.scale.pow()
 		.domain([0, 1])
@@ -96,14 +86,7 @@ function audio_init() {
 audio_init();
 
 
-//---------------------------------------------------------
-//		WHEN DOCUMENT IS READY
-//---------------------------------------------------------
-
 $( document ).ready(function() {
-	
-	audio.gain.gain.value = 0;
-	audio.oscillator.start(0);
 
 
 	//---------------------------------------------------------
@@ -183,9 +166,20 @@ function play_note(x, y) {
 		.attr("fill", "rgba(30, 30, 255, 0)")
 		.remove();
 
-	// audio update
-	audio.gain.gain.value = y;
+	// create audio nodes
+	var oscillator = audio.context.createOscillator(),
+		gain = audio.context.createGainNode();
+
+	// route
+	oscillator.connect(gain);
+	gain.connect(audio.context.destination);
+
+	// use x and y values
+	gain.gain.value = y;
 	var now = audio.context.currentTime;
-	audio.gain.gain.setTargetAtTime(0, now, 0.2);
-	audio.oscillator.frequency.setValueAtTime(audio.freq_scale(x), now);
+	gain.gain.setTargetAtTime(0, now, 0.2);
+	oscillator.frequency.setValueAtTime(audio.freq_scale(x), now);
+
+	// and play
+	oscillator.start(0);
 }
