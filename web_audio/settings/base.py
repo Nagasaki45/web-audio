@@ -8,6 +8,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
+import os
 from django.core.exceptions import ImproperlyConfigured
 
 
@@ -26,8 +27,12 @@ def get_environ(key, critical=True):
         return None
 
 
+# Pusher settings
+PUSHER_APP_ID = '65634'
+PUSHER_KEY = 'faeca2549c7ec94a3faa'
+PUSHER_SECRET = get_environ('PUSHER_SECRET')
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 

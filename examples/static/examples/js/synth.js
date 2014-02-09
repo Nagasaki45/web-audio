@@ -1,4 +1,11 @@
 //---------------------------------------------------------
+//		PUSHER INIT
+//---------------------------------------------------------
+
+var pusher = new Pusher('faeca2549c7ec94a3faa');
+pusher.clients_channel = pusher.subscribe('clients_channel');
+
+//---------------------------------------------------------
 //		GUI INIT
 //---------------------------------------------------------
 
@@ -10,7 +17,7 @@ function gui_init() {
 		width = $("#content").width();
 
 	// svg element
-	gui.svg = d3.select(".synth")
+	var svg = d3.select(".synth")
 		.append("svg")
 		.attr("height", height)
 		.attr("width", width);
@@ -25,18 +32,17 @@ function gui_init() {
 		.range([1, 0]);
 
 	// interface
-	gui.interface = gui.svg.append("rect")
+	var interface = svg.append("rect")
 		.attr("height", height)
 		.attr("width", width)
-		.attr("fill", "rgba(30, 160, 30, 0.5)")
+		.attr("id", "interface");
 
 	// mute button
 	var dim = 20,
 		pad = 10,
 		stroke_width = 2;
 
-	var mute = gui.svg
-		.append("rect")
+	var mute = svg.append("rect")
 		.attr("height", dim)
 		.attr("width", dim)
 		.attr("x", pad)
@@ -46,12 +52,12 @@ function gui_init() {
 
 	var text_pad = 4;
 
-	var mute_text = gui.svg
-		.append("text")
+	var mute_text = svg.append("text")
 		.attr("dy", "-0.35em")
 		.attr("x", pad + dim + text_pad)
 		.attr("y", height - 10)
-		.text("Mute");
+		.attr("id", "mute-text")
+		.text("Mute web users");
 
 }
 
@@ -99,6 +105,7 @@ $( document ).ready(function() {
 	audio.gain.gain.value = 0;
 	audio.oscillator.start(0);
 
+
 	//---------------------------------------------------------
 	//		MUTE ONCLICK LISTENER
 	//---------------------------------------------------------
@@ -106,52 +113,79 @@ $( document ).ready(function() {
 	d3.select("#mute").on("click", function(d) {
 
 		var mute = d3.select("#mute"),
-			mute_text = d3.select("text");
+			mute_text = d3.select("#mute-text");
 
 		// if muted
 		if (mute.classed("mute-on")) {
 			mute.classed("mute-on", false)
 				.classed("mute-off", true);
-			mute_text.text("Mute");
+			mute_text.text("Mute web users");
 		} else {
 			mute.classed("mute-on", true)
 				.classed("mute-off", false);
-			mute_text.text("UnMute");
+			mute_text.text("UnMute web users");
 		}
 	});
 
+
 	//---------------------------------------------------------
-	//		PLAY ONCLICK LISTENER
+	//		INTERFACE ONCLICK LISTENER
 	//---------------------------------------------------------
 
-	gui.interface.on("click", function(d) {
+	d3.select("#interface").on("click", function(d) {
 
-		// if mute is off
+		gui.mouse_x = gui.x(d3.mouse(this)[0])
+		gui.mouse_y = gui.y(d3.mouse(this)[1])
+
+		play_note(gui.mouse_x, gui.mouse_y);
+
+		// sending user click the server with ajax
+		$.get(
+			click_url,
+			{x: gui.mouse_x, y: gui.mouse_y}
+		);
+		
+	});
+
+	//---------------------------------------------------------
+	//		PUSHER HANDLER
+	//---------------------------------------------------------
+
+	pusher.clients_channel.bind('click', function(data) {
+
+		// check if web users mute is off
 		if (d3.select("#mute").classed("mute-off")) {
-
-			gui.mouse_x = gui.x(d3.mouse(this)[0])
-			gui.mouse_y = gui.y(d3.mouse(this)[1])
-
-			// circle creation, transition and removal
-			var circle = gui.svg.append("circle")
-				.attr("cx", gui.x.invert(gui.mouse_x))
-				.attr("cy", gui.y.invert(gui.mouse_y))
-				.attr("r", 3)
-				.attr("fill", "rgba(30, 30, 255, 0.8)")
-				.transition()
-				.duration(500)
-				.attr("r", 30)
-				.attr("fill", "rgba(30, 30, 255, 0)")
-				.remove();
-
-			// audio update
-			audio.gain.gain.value = gui.mouse_y;
-			var now = audio.context.currentTime;
-			audio.gain.gain.setTargetAtTime(0, now, 0.2);
-			audio.oscillator.frequency.setValueAtTime(audio.freq_scale(gui.mouse_x), now);
-
+			// play note only if not the message sender
+			if (data.x != gui.mouse_x && data.y != gui.mouse_y) {
+				play_note(data.x, data.y);
+			}
 		}
-
 	});
 
 });
+
+
+//---------------------------------------------------------
+//		NOTE PLAYER
+//---------------------------------------------------------
+
+function play_note(x, y) {
+
+	// circle creation, transition and removal
+	var circle = d3.select("svg").append("circle")
+		.attr("cx", gui.x.invert(x))
+		.attr("cy", gui.y.invert(y))
+		.attr("r", 3)
+		.attr("fill", "rgba(30, 30, 255, 0.8)")
+		.transition()
+		.duration(500)
+		.attr("r", 30)
+		.attr("fill", "rgba(30, 30, 255, 0)")
+		.remove();
+
+	// audio update
+	audio.gain.gain.value = y;
+	var now = audio.context.currentTime;
+	audio.gain.gain.setTargetAtTime(0, now, 0.2);
+	audio.oscillator.frequency.setValueAtTime(audio.freq_scale(x), now);
+}
