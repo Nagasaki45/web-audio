@@ -122,12 +122,12 @@ $( document ).ready(function() {
 		gui.mouse_x = gui.x(d3.mouse(this)[0])
 		gui.mouse_y = gui.y(d3.mouse(this)[1])
 
-		play_note(gui.mouse_x, gui.mouse_y);
+		play_note(gui.mouse_x, gui.mouse_y, gui.color);
 
 		// sending user click the server with ajax
 		$.get(
 			click_url,
-			{x: gui.mouse_x, y: gui.mouse_y}
+			{x: gui.mouse_x, y: gui.mouse_y, color: gui.color}
 		);
 	});
 
@@ -143,7 +143,7 @@ $( document ).ready(function() {
 
 			// play note only if not the message sender
 			if (data.csrftoken != $.cookie('csrftoken')) {
-				play_note(data.x, data.y);
+				play_note(data.x, data.y, data.color);
 			}
 		}
 	});
@@ -155,14 +155,14 @@ $( document ).ready(function() {
 //		NOTE PLAYER
 //---------------------------------------------------------
 
-function play_note(x, y) {
+function play_note(x, y, color) {
 
 	// circle creation, transition and removal
 	var circle = d3.select("svg").append("circle")
 		.attr("cx", gui.x.invert(x))
 		.attr("cy", gui.y.invert(y))
 		.attr("r", 3)
-		.attr("fill", gui.color)
+		.attr("fill", color)
 		.attr("opacity", 1)
 		.transition()
 		.duration(500)

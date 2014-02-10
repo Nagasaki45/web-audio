@@ -20,10 +20,10 @@ def index(request):
 
 
 def click(request):
-    x = request.GET.get('x')
-    y = request.GET.get('y')
-    csrftoken = request.COOKIES.get('csrftoken')
-    p['clients_channel'].trigger('click', dict(x=x,
-                                               y=y,
-                                               csrftoken=csrftoken))
+    p['clients_channel'].trigger('click', dict(
+        x=request.GET.get('x'),
+        y=request.GET.get('y'),
+        color=request.GET.get('color'),
+        csrftoken=request.COOKIES.get('csrftoken')
+    ))
     return HttpResponse(json.dumps(dict(success=True)))
