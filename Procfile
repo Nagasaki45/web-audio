@@ -1,1 +1,1 @@
-web: gunicorn web_audio.wsgi
+web: python tornado_main.py
