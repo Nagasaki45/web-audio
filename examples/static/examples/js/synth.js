@@ -2,8 +2,15 @@
 //		PUSHER INIT
 //---------------------------------------------------------
 
-var pusher = new Pusher('faeca2549c7ec94a3faa');
-pusher.clients_channel = pusher.subscribe('clients_channel');
+// var pusher = new Pusher('faeca2549c7ec94a3faa');
+// pusher.clients_channel = pusher.subscribe('clients_channel');
+
+
+//---------------------------------------------------------
+//		WEBSOCKET INIT
+//---------------------------------------------------------
+
+var ws = new WebSocket("ws://" + location.host + ws_url);	
 
 
 //---------------------------------------------------------
@@ -12,7 +19,7 @@ pusher.clients_channel = pusher.subscribe('clients_channel');
 
 var gui = {}
 
-function gui_init() {
+gui.gui_init = function() {
 
 	// random color generated on init
 	gui.color = "hsl(" + Math.floor(Math.random() * 360) + " ,100%, 50%)";
@@ -64,7 +71,7 @@ function gui_init() {
 		.text("Mute web users");
 }
 
-gui_init();
+gui.gui_init();
 
 
 //---------------------------------------------------------
@@ -73,7 +80,7 @@ gui_init();
 
 var audio = {}
 
-function audio_init() {
+audio.audio_init = function() {
 
 	// fix up prefixing
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -85,7 +92,7 @@ function audio_init() {
 		.range([200, 5000]);
 }
 
-audio_init();
+audio.audio_init();
 
 
 $( document ).ready(function() {
@@ -125,28 +132,45 @@ $( document ).ready(function() {
 		play_note(gui.mouse_x, gui.mouse_y, gui.color);
 
 		// sending user click the server with ajax
-		$.get(
-			click_url,
-			{x: gui.mouse_x, y: gui.mouse_y, color: gui.color}
-		);
+		// $.get(
+		// 	click_url,
+		// 	{x: gui.mouse_x, y: gui.mouse_y, color: gui.color}
+		// );
+
+		// sending user click to tornado server through websockets
+		// data must being sent as string
+		ws.send(JSON.stringify({x: gui.mouse_x, y: gui.mouse_y, color: gui.color}));
 	});
+
+
+	//---------------------------------------------------------
+	//		WEBSOCKETS HANDLER
+	//---------------------------------------------------------
+
+	ws.onmessage = function(evt) {
+		// check if web users mute is off
+		if (d3.select("#mute").classed("mute-off")) {
+			data = JSON.parse(evt.data);
+			play_note(data.x, data.y, data.color);
+		}
+	};
 
 
 	//---------------------------------------------------------
 	//		PUSHER HANDLER
 	//---------------------------------------------------------
 
-	pusher.clients_channel.bind('click', function(data) {
+	// pusher.clients_channel.bind('click', function(data) {
 
-		// check if web users mute is off
-		if (d3.select("#mute").classed("mute-off")) {
+	// 	// check if web users mute is off
+	// 	if (d3.select("#mute").classed("mute-off")) {
 
-			// play note only if not the message sender
-			if (data.csrftoken != $.cookie('csrftoken')) {
-				play_note(data.x, data.y, data.color);
-			}
-		}
-	});
+	// 		// play note only if not the message sender
+	// 		if (data.csrftoken != $.cookie('csrftoken')) {
+	// 			play_note(data.x, data.y, data.color);
+	// 		}
+	// 	}
+	// });
 
 });
 

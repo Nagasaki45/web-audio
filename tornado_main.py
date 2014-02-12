@@ -3,6 +3,7 @@
 from tornado.options import options, define, parse_command_line
 import django.core.handlers.wsgi
 import tornado.httpserver
+import tornado.websocket
 import tornado.ioloop
 import tornado.web
 import tornado.wsgi
@@ -11,10 +12,31 @@ from django.conf import settings as djsettings
 
 define('port', type=int, default=8000)
 
+clients = []
+
 
 class HelloHandler(tornado.web.RequestHandler):
+
     def get(self):
         self.write('Hello from tornado')
+
+
+class WsHandler(tornado.websocket.WebSocketHandler):
+
+    def open(self):
+        clients.append(self)
+
+    def on_close(self):
+        clients.remove(self)
+
+    def on_message(self, message):
+        '''
+        Sends the message to all of the clients except the sender.
+        '''
+
+        for c in clients:
+            if c != self:
+                c.write_message(message)
 
 
 def main():
@@ -24,12 +46,13 @@ def main():
     )
 
     handlers = (
-        ('/hello-tornado', HelloHandler),
-        ('.*', tornado.web.FallbackHandler, dict(fallback=wsgi_app)),
+        (r'/hello-tornado', HelloHandler),
+        (djsettings.WEBSOCKET_URL, WsHandler),
+        (r'.*', tornado.web.FallbackHandler, dict(fallback=wsgi_app)),
     )
 
     settings = dict(
-        debug=djsettings.DEBUG, 
+        debug=djsettings.DEBUG,
         # be sure to run "python manage.py collecstatic"!
         static_path=djsettings.STATIC_ROOT
     )

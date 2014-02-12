@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load get_setting %}
 
 {% block content %}
 
@@ -9,7 +10,8 @@
 <div class="synth"></div>
 
 <script type="text/javascript">
-	var click_url = "{% url "examples:click" %}";
+	{% comment %} var click_url = "{% url "examples:click" %}";{% endcomment %}
+	var ws_url = "{% get_setting WEBSOCKET_URL %}"
 </script>
 
 {% endblock %}
