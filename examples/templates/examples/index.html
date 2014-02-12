@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load staticfiles %}
 {% load get_setting %}
 
 {% block content %}
@@ -9,9 +10,11 @@
 </p>
 <div class="synth"></div>
 
+{% endblock %}
+
+{% block scripts %}
 <script type="text/javascript">
-	{% comment %} var click_url = "{% url "examples:click" %}";{% endcomment %}
 	var ws_url = "{% get_setting WEBSOCKET_URL %}"
 </script>
-
+<script type="text/javascript" src="{% static "examples/js/synth.js" %}"></script>
 {% endblock %}

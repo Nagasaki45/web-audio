@@ -27,11 +27,6 @@ def get_environ(key, critical=True):
         return None
 
 
-# Pusher settings
-# PUSHER_APP_ID = '65634'
-# PUSHER_KEY = 'faeca2549c7ec94a3faa'
-# PUSHER_SECRET = get_environ('PUSHER_SECRET')
-
 WEBSOCKET_URL = r'/ws'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
