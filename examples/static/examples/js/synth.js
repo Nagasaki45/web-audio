@@ -6,6 +6,25 @@ var ws = new WebSocket("ws://" + location.host + ws_url);
 
 
 //---------------------------------------------------------
+//		AUDIO INIT
+//---------------------------------------------------------
+
+var audio = {
+	octaves: 3,
+	lowest_pitch: 440,
+}
+
+audio.audio_init = function() {
+
+	// fix up prefixing
+	window.AudioContext = window.AudioContext || window.webkitAudioContext;
+	audio.context = new AudioContext();
+}
+
+audio.audio_init();
+
+
+//---------------------------------------------------------
 //		GUI INIT
 //---------------------------------------------------------
 
@@ -14,7 +33,7 @@ var gui = {}
 gui.gui_init = function() {
 
 	// random color generated on init
-	gui.color = "hsl(" + Math.floor(Math.random() * 360) + " ,100%, 50%)";
+	var color = "hsl(" + Math.floor(Math.random() * 360) + " ,100%, 50%)";
 
 	var height = 150,
 		width = $("#content").width();
@@ -26,142 +45,77 @@ gui.gui_init = function() {
 		.attr("width", width);
 
 	// x and y scales
-	gui.x = d3.scale.linear()
+	var x = d3.scale.linear()
 		.domain([0, width])
 		.range([0, 1]);
 
-	gui.y = d3.scale.linear()
+	var y = d3.scale.linear()
 		.domain([0, height])
 		.range([1, 0]);
 
 	// interface
-	var interface = svg.append("rect")
+	var interface = svg.append("g")
 		.attr("height", height)
 		.attr("width", width)
 		.attr("id", "interface");
 
-	// mute button
-	var dim = 20,
-		pad = 10,
-		stroke_width = 2;
+	var keys_scale = d3.scale.ordinal()
+		.domain(d3.range(audio.octaves * 12))
+		.rangeRoundBands([0, width], 0.05);
 
-	var mute = svg.append("rect")
-		.attr("height", dim)
-		.attr("width", dim)
-		.attr("x", pad)
-		.attr("y", height - dim - pad)
-		.attr("id", "mute")
-		.classed("mute-off", true);
+	var keys = interface.selectAll("line")
+		.data(d3.range(audio.octaves * 12))
+		.enter()
+		.append("rect")
+		.attr("x", function(d) {
+			return keys_scale(d);
+		})
+		.attr("y", 0)
+		.attr("width", function() {
+			return keys_scale.rangeBand();
+		})
+		.attr("height", height)
+		.classed("key", true)
+		.classed("tonic", function(d) { return d % 12 == 0; })
+		.classed("stable", function(d) { return d % 12 == 4 || d % 12 == 7; })
+		.on("click", function(d) {
+			play_note(d, 0.5);
+			var circle_position = {
+				x: d3.mouse(this)[0],
+				y: d3.mouse(this)[1],
+			}
+			draw_circle(circle_position, color);
 
-	var text_pad = 4;
-
-	var mute_text = svg.append("text")
-		.attr("dy", "-0.35em")
-		.attr("x", pad + dim + text_pad)
-		.attr("y", height - 10)
-		.attr("id", "mute-text")
-		.text("Mute web users");
+			// sending user click to tornado server through websockets
+			// data must being sent as string
+			ws.send(JSON.stringify(
+				{note: d,
+				amp: 0.5,
+				circle_position: circle_position,
+				color: color}
+			));
+		});
 }
 
 gui.gui_init();
 
 
 //---------------------------------------------------------
-//		AUDIO INIT
+//		WEBSOCKETS HANDLER
 //---------------------------------------------------------
 
-var audio = {}
-
-audio.audio_init = function() {
-
-	// fix up prefixing
-	window.AudioContext = window.AudioContext || window.webkitAudioContext;
-	audio.context = new AudioContext();
-
-	// audio logaritmic scale
-	audio.freq_scale = d3.scale.pow()
-		.domain([0, 1])
-		.range([200, 5000]);
-}
-
-audio.audio_init();
-
-
-$( document ).ready(function() {
-
-
-	//---------------------------------------------------------
-	//		MUTE ONCLICK LISTENER
-	//---------------------------------------------------------
-
-	d3.select("#mute").on("click", function(d) {
-
-		var mute = d3.select("#mute"),
-			mute_text = d3.select("#mute-text");
-
-		// if muted
-		if (mute.classed("mute-on")) {
-			mute.classed("mute-on", false)
-				.classed("mute-off", true);
-			mute_text.text("Mute web users");
-		} else {
-			mute.classed("mute-on", true)
-				.classed("mute-off", false);
-			mute_text.text("UnMute web users");
-		}
-	});
-
-
-	//---------------------------------------------------------
-	//		INTERFACE ONCLICK LISTENER
-	//---------------------------------------------------------
-
-	d3.select("#interface").on("click", function(d) {
-
-		gui.mouse_x = gui.x(d3.mouse(this)[0])
-		gui.mouse_y = gui.y(d3.mouse(this)[1])
-
-		play_note(gui.mouse_x, gui.mouse_y, gui.color);
-
-		// sending user click to tornado server through websockets
-		// data must being sent as string
-		ws.send(JSON.stringify({x: gui.mouse_x, y: gui.mouse_y, color: gui.color}));
-	});
-
-
-	//---------------------------------------------------------
-	//		WEBSOCKETS HANDLER
-	//---------------------------------------------------------
-
-	ws.onmessage = function(evt) {
-		// check if web users mute is off
-		if (d3.select("#mute").classed("mute-off")) {
-			data = JSON.parse(evt.data);
-			play_note(data.x, data.y, data.color);
-		}
-	};
-
-});
+ws.onmessage = function(evt) {
+	data = JSON.parse(evt.data);
+	play_note(data.note, data.amp);
+	draw_circle(data.circle_position, data.color);
+};
 
 
 //---------------------------------------------------------
 //		NOTE PLAYER
 //---------------------------------------------------------
 
-function play_note(x, y, color) {
-
-	// circle creation, transition and removal
-	var circle = d3.select("svg").append("circle")
-		.attr("cx", gui.x.invert(x))
-		.attr("cy", gui.y.invert(y))
-		.attr("r", 3)
-		.attr("fill", color)
-		.attr("opacity", 1)
-		.transition()
-		.duration(500)
-		.attr("r", 60)
-		.attr("opacity", 0)
-		.remove();
+function play_note(note, amp) {
 
 	// create audio nodes
 	var oscillator = audio.context.createOscillator(),
@@ -171,13 +125,29 @@ function play_note(x, y, color) {
 	oscillator.connect(gain);
 	gain.connect(audio.context.destination);
 
-	// use x and y values
 	var now = audio.context.currentTime;
-	gain.gain.setValueAtTime(y, now);
+	gain.gain.setValueAtTime(amp, now);
 	gain.gain.linearRampToValueAtTime(0, now + 1);
-	oscillator.frequency.setValueAtTime(audio.freq_scale(x), now);
+
+	var freq = audio.lowest_pitch * (Math.pow(2, note/12));
+	oscillator.frequency.setValueAtTime(freq, now);
 
 	// play and stop
 	oscillator.start(now);
 	oscillator.stop(now + 1);
+}
+
+
+function draw_circle(circle_position, color) {
+	d3.select("svg").append("circle")
+		.attr("cx", circle_position.x)
+		.attr("cy", circle_position.y)
+		.attr("r", 3)
+		.attr("fill", color)
+		.attr("opacity", 1)
+		.transition()
+		.duration(500)
+		.attr("r", 60)
+		.attr("opacity", 0)
+		.remove();
 }

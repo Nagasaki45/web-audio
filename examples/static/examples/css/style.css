@@ -2,17 +2,18 @@ body {
 	padding-top: 50px;
 }
 
-rect#mute {
-	stroke: black;
-	stroke-width: stroke_width;
+rect.key {
+	opacity: 0.9;
+	fill: #D0D0D0;
+	stroke: "grey";
+	stroke-width: 3;
 }
-rect#mute.mute-on {
-	fill: black;
+rect.key.tonic {
+	fill: #0099FF;
 }
-rect#mute.mute-off {
-	fill: white;
+rect.key.stable {
+	fill: #B0B0FF;
 }
-
-rect#interface {
-	fill: rgba(30, 160, 30, 0.5);
+rect.key:hover {
+	fill: orange;
 }
