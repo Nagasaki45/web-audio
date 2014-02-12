@@ -63,6 +63,11 @@ gui.gui_init = function() {
 		.domain(d3.range(audio.octaves * 12))
 		.rangeRoundBands([0, width], 0.05);
 
+	var keys_half_height = d3.scale.pow()
+		.domain([0, audio.octaves * 12])
+		.rangeRound([height, 0.3 * height])
+		.exponent(0.7);
+
 	var keys = interface.selectAll("line")
 		.data(d3.range(audio.octaves * 12))
 		.enter()
@@ -70,11 +75,15 @@ gui.gui_init = function() {
 		.attr("x", function(d) {
 			return keys_scale(d);
 		})
-		.attr("y", 0)
 		.attr("width", function() {
 			return keys_scale.rangeBand();
 		})
-		.attr("height", height)
+		.attr("y", function(d) {
+			return 0.5 * (height - keys_half_height(d));
+		})
+		.attr("height", function(d) {
+			return keys_half_height(d);
+		})
 		.classed("key", true)
 		.classed("tonic", function(d) { return d % 12 == 0; })
 		.classed("stable", function(d) { return d % 12 == 4 || d % 12 == 7; })
