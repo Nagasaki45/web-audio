@@ -19,6 +19,20 @@ audio.audio_init = function() {
 	// fix up prefixing
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	audio.context = new AudioContext();
+
+	// init tuna effects library and convolver effect
+	audio.tuna = new Tuna(audio.context);
+	audio.convolver = new audio.tuna.Convolver({
+		highCut: 22050,
+		lowCut: 20,
+		dryLevel: 0.5,
+		wetLevel: 1.5,
+		level: 0.5,
+		// impulse response from voxengo IM reverb pack 1
+		impulse: "static/impulses/Five Columns Long.wav",
+		bypass: 0
+	});
+	audio.convolver.connect(audio.context.destination);
 }
 
 audio.audio_init();
@@ -44,15 +58,6 @@ gui.gui_init = function() {
 		.attr("height", height)
 		.attr("width", width);
 
-	// x and y scales
-	var x = d3.scale.linear()
-		.domain([0, width])
-		.range([0, 1]);
-
-	var y = d3.scale.linear()
-		.domain([0, height])
-		.range([1, 0]);
-
 	// interface
 	var interface = svg.append("g")
 		.attr("height", height)
@@ -63,7 +68,7 @@ gui.gui_init = function() {
 		.domain(d3.range(audio.octaves * 12))
 		.rangeRoundBands([0, width], 0.05);
 
-	var keys_half_height = d3.scale.pow()
+	var keys_height = d3.scale.pow()
 		.domain([0, audio.octaves * 12])
 		.rangeRound([height, 0.3 * height])
 		.exponent(0.7);
@@ -79,16 +84,17 @@ gui.gui_init = function() {
 			return keys_scale.rangeBand();
 		})
 		.attr("y", function(d) {
-			return 0.5 * (height - keys_half_height(d));
+			return 0.5 * (height - keys_height(d));
 		})
 		.attr("height", function(d) {
-			return keys_half_height(d);
+			return keys_height(d);
 		})
 		.classed("key", true)
 		.classed("tonic", function(d) { return d % 12 == 0; })
 		.classed("stable", function(d) { return d % 12 == 4 || d % 12 == 7; })
 		.on("click", function(d) {
-			play_note(d, 0.5);
+			var upper_keyboard = d3.mouse(this)[1] < (height / 2);
+			play_note(d, upper_keyboard);
 			var circle_position = {
 				x: d3.mouse(this)[0],
 				y: d3.mouse(this)[1],
@@ -99,11 +105,18 @@ gui.gui_init = function() {
 			// data must being sent as string
 			ws.send(JSON.stringify(
 				{note: d,
-				amp: 0.5,
+				upper_keyboard: upper_keyboard,
 				circle_position: circle_position,
 				color: color}
 			));
 		});
+
+	interface.append("line")
+		.attr("x1", 0)
+		.attr("x2", width)
+		.attr("y1", height / 2)
+		.attr("y2", height / 2)
+		.attr("stroke", "black");
 }
 
 gui.gui_init();
@@ -115,7 +128,7 @@ gui.gui_init();
 
 ws.onmessage = function(evt) {
 	data = JSON.parse(evt.data);
-	play_note(data.note, data.amp);
+	play_note(data.note, data.upper_keyboard);
 	draw_circle(data.circle_position, data.color);
 };
 
@@ -124,7 +137,7 @@ ws.onmessage = function(evt) {
 //		NOTE PLAYER
 //---------------------------------------------------------
 
-function play_note(note, amp) {
+function play_note(note, upper_keyboard) {
 
 	// create audio nodes
 	var oscillator = audio.context.createOscillator(),
@@ -132,10 +145,14 @@ function play_note(note, amp) {
 
 	// route
 	oscillator.connect(gain);
-	gain.connect(audio.context.destination);
+	if (upper_keyboard) {
+		gain.connect(audio.convolver.input);
+	} else {
+		gain.connect(audio.context.destination);
+	}
 
 	var now = audio.context.currentTime;
-	gain.gain.setValueAtTime(amp, now);
+	gain.gain.setValueAtTime(0.5, now);
 	gain.gain.linearRampToValueAtTime(0, now + 1);
 
 	var freq = audio.lowest_pitch * (Math.pow(2, note/12));
