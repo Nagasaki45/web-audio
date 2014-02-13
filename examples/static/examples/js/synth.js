@@ -25,7 +25,7 @@ audio.audio_init = function() {
 	audio.convolver = new audio.tuna.Convolver({
 		highCut: 22050,
 		lowCut: 20,
-		dryLevel: 0.5,
+		dryLevel: 1,
 		wetLevel: 1.5,
 		level: 0.5,
 		// impulse response from voxengo IM reverb pack 1
@@ -50,10 +50,10 @@ gui.gui_init = function() {
 	var color = "hsl(" + Math.floor(Math.random() * 360) + " ,100%, 50%)";
 
 	var height = 150,
-		width = $("#content").width();
+		width = $("#synth").width();
 
 	// svg element
-	var svg = d3.select(".synth")
+	var svg = d3.select("#synth")
 		.append("svg")
 		.attr("height", height)
 		.attr("width", width);
@@ -91,32 +91,49 @@ gui.gui_init = function() {
 		})
 		.classed("key", true)
 		.classed("tonic", function(d) { return d % 12 == 0; })
-		.classed("stable", function(d) { return d % 12 == 4 || d % 12 == 7; })
-		.on("click", function(d) {
-			var upper_keyboard = d3.mouse(this)[1] < (height / 2);
-			play_note(d, upper_keyboard);
-			var circle_position = {
-				x: d3.mouse(this)[0],
-				y: d3.mouse(this)[1],
-			}
-			draw_circle(circle_position, color);
+		.classed("stable", function(d) { return d % 12 == 4 || d % 12 == 7; });
 
-			// sending user click to tornado server through websockets
-			// data must being sent as string
-			ws.send(JSON.stringify(
-				{note: d,
-				upper_keyboard: upper_keyboard,
-				circle_position: circle_position,
-				color: color}
-			));
-		});
-
+	// middle line
 	interface.append("line")
 		.attr("x1", 0)
 		.attr("x2", width)
 		.attr("y1", height / 2)
 		.attr("y2", height / 2)
 		.attr("stroke", "black");
+
+
+	//---------------------------------------------------------
+	//		NOTE CLICK LISTENER
+	//---------------------------------------------------------
+
+	keys.on("mousedown", function(d) {
+
+		// collect note properties to play and draw
+		var upper_keyboard = d3.mouse(this)[1] < (height / 2);
+		var keyboard_name = 'low';
+		if (upper_keyboard) {
+			keyboard_name = 'up';
+		}
+		var properties = {
+			note: d,
+			upper_keyboard: upper_keyboard,
+			verb: $("[name=" + keyboard_name + "-verb]").is(":checked"),
+			osc: $("[name=" + keyboard_name + "-osc]:checked").val(),
+			circle_position: {
+				x: d3.mouse(this)[0],
+				y: d3.mouse(this)[1],
+			},
+			color: color,
+		}
+
+		// play and draw properties
+		play_note(properties);
+		draw_circle(properties);
+
+		// sending user click to tornado server through websockets
+		// data must being sent as string
+		ws.send(JSON.stringify(properties));
+	});
 }
 
 gui.gui_init();
@@ -127,17 +144,17 @@ gui.gui_init();
 //---------------------------------------------------------
 
 ws.onmessage = function(evt) {
-	data = JSON.parse(evt.data);
-	play_note(data.note, data.upper_keyboard);
-	draw_circle(data.circle_position, data.color);
+	properties = JSON.parse(evt.data);
+	play_note(properties);
+	draw_circle(properties);
 };
 
 
 //---------------------------------------------------------
-//		NOTE PLAYER
+//		NOTE PLAYER AND NOTE CIRCLE DRAWER
 //---------------------------------------------------------
 
-function play_note(note, upper_keyboard) {
+function play_note(properties) {
 
 	// create audio nodes
 	var oscillator = audio.context.createOscillator(),
@@ -145,7 +162,7 @@ function play_note(note, upper_keyboard) {
 
 	// route
 	oscillator.connect(gain);
-	if (upper_keyboard) {
+	if (properties.verb) {
 		gain.connect(audio.convolver.input);
 	} else {
 		gain.connect(audio.context.destination);
@@ -155,8 +172,9 @@ function play_note(note, upper_keyboard) {
 	gain.gain.setValueAtTime(0.5, now);
 	gain.gain.linearRampToValueAtTime(0, now + 1);
 
-	var freq = audio.lowest_pitch * (Math.pow(2, note/12));
+	var freq = audio.lowest_pitch * (Math.pow(2, properties.note/12));
 	oscillator.frequency.setValueAtTime(freq, now);
+	oscillator.type = properties.osc;
 
 	// play and stop
 	oscillator.start(now);
@@ -164,12 +182,12 @@ function play_note(note, upper_keyboard) {
 }
 
 
-function draw_circle(circle_position, color) {
+function draw_circle(properties) {
 	d3.select("svg").append("circle")
-		.attr("cx", circle_position.x)
-		.attr("cy", circle_position.y)
+		.attr("cx", properties.circle_position.x)
+		.attr("cy", properties.circle_position.y)
 		.attr("r", 3)
-		.attr("fill", color)
+		.attr("fill", properties.color)
 		.attr("opacity", 1)
 		.transition()
 		.duration(500)

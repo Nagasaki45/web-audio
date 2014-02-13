@@ -5,10 +5,59 @@
 {% block content %}
 
 <h1>My first collaborative web synth</h1>
+
 <p class="lead">
 	Showcase: shared music creation on the web. Ask a friend to open his browser to hear the magic :-)
 </p>
-<div class="synth"></div>
+
+<div class="well">
+  <div id="synth"></div>
+</div>
+
+<!-- KB properties -->
+<div class="row">
+  <div class="col-sm-6">
+    <div class="well">
+      <div class="text-center">
+        <p class="lead">Upper keyboard properties</p>
+      </div>
+      <div class="row">
+        <div class="col-xs-2"><label>Reverb</label></div>
+        <div class="col-xs-4"><input type="checkbox" name="up-verb"></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-2"><label>Oscillator</label></div>
+        <div class="col-xs-4">
+          <input type="radio" name="up-osc" value="sine" checked>Sine<br >
+          <input type="radio" name="up-osc" value="square">Square<br >
+          <input type="radio" name="up-osc" value="sawtooth">Sawtooth<br >
+          <input type="radio" name="up-osc" value="triangle">Triangle<br >
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6">
+    <div class="well">
+      <div class="text-center">
+        <p class="lead">Lower keyboard properties</p>
+      </div>
+      <div class="row">
+        <div class="col-xs-2"><label>Reverb</label></div>
+        <div class="col-xs-4"><input type="checkbox" name="low-verb"></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-2"><label>Oscillator</label></div>
+        <div class="col-xs-4">
+          <input type="radio" name="low-osc" value="sine" checked>Sine<br >
+          <input type="radio" name="low-osc" value="square">Square<br >
+          <input type="radio" name="low-osc" value="sawtooth">Sawtooth<br >
+          <input type="radio" name="low-osc" value="triangle">Triangle<br >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
 
