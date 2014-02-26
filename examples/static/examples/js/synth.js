@@ -19,7 +19,6 @@ ws.onmessage = function(evt) {
 
 var audio = {
 	octaves: 3,
-	lowest_pitch: 440,
 
 	init: function() {
 
@@ -64,8 +63,9 @@ var audio = {
 		gain.gain.setValueAtTime(0.5, now);
 		gain.gain.linearRampToValueAtTime(0, now + 1);
 
-		var freq = that.lowest_pitch * (Math.pow(2, properties.note/12));
-		oscillator.frequency.setValueAtTime(freq, now);
+		oscillator.frequency.value = 220;
+		// use detune to set pitch
+		oscillator.detune.value = properties.note * 100;
 		oscillator.type = properties.osc;
 
 		// play and stop
