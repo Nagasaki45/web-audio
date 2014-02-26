@@ -20,6 +20,21 @@ ws.onmessage = function(evt) {
 var audio = {
 	octaves: 3,
 
+	load_buffer: function(url, callback) {  // the callback will get the newly created buffer
+
+		var that = this;  // important in order to use "that" in functions		
+
+		var request = new XMLHttpRequest();
+		request.open('GET', url, true);
+		request.responseType = "arraybuffer";
+
+		// decode asynchronously
+		request.onload = function() {
+			that.context.decodeAudioData(request.response, callback);
+		}
+		request.send();
+	},
+
 	init: function() {
 
 		var that = this;  // important in order to use "that" in functions
@@ -28,19 +43,15 @@ var audio = {
 		window.AudioContext = window.AudioContext || window.webkitAudioContext;
 		that.context = new AudioContext();
 
-		// init tuna effects library and convolver effect
-		that.tuna = new Tuna(audio.context);
-		that.convolver = new that.tuna.Convolver({
-			highCut: 22050,
-			lowCut: 20,
-			dryLevel: 1,
-			wetLevel: 1.5,
-			level: 0.5,
-			// impulse response from voxengo IM reverb pack 1
-			impulse: "static/impulses/Five Columns Long.wav",
-			bypass: 0
+		// create convolver and connect to destination
+		that.load_buffer("static/impulses/Five Columns Long.wav", function(buffer) {
+			that.convolver.buffer = buffer;
 		});
-		that.convolver.connect(that.context.destination);
+		that.convolver = that.context.createConvolver();
+		var gain = that.context.createGainNode();  // make convolved audio a bit louder
+		gain.gain.value = 1.5;
+		that.convolver.connect(gain);
+		gain.connect(that.context.destination);
 	},
 
 	play_note: function(properties) {
@@ -54,9 +65,9 @@ var audio = {
 		// route
 		oscillator.connect(gain);
 		if (properties.verb) {
-			gain.connect(audio.convolver.input);
+			gain.connect(that.convolver);
 		} else {
-			gain.connect(audio.context.destination);
+			gain.connect(that.context.destination);
 		}
 
 		var now = that.context.currentTime;
