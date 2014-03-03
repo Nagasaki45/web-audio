@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 
+import os
+
 from tornado.options import options, define, parse_command_line
-import django.core.handlers.wsgi
 import tornado.httpserver
 import tornado.websocket
 import tornado.ioloop
 import tornado.web
 import tornado.wsgi
 
+import django.core.handlers.wsgi
 from django.conf import settings as djsettings
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE',
+                      'web_audio.settings.base')
 
 define('port', type=int, default=8000)
 
