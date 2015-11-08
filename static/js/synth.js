@@ -50,7 +50,7 @@ var audio = {
             that.convolver.buffer = buffer;
         });
         that.convolver = that.context.createConvolver();
-        gain = that.context.createGainNode();  // make convolved audio a bit louder
+        gain = that.context.createGain();  // make convolved audio a bit louder
         gain.gain.value = 1.5;
         that.convolver.connect(gain);
         gain.connect(that.context.destination);
@@ -61,7 +61,7 @@ var audio = {
 
         var that = this,  // important in order to use "that" in function s
             oscillator = that.context.createOscillator(),
-            gain = that.context.createGainNode(),
+            gain = that.context.createGain(),
             now = that.context.currentTime;
 
         // route
