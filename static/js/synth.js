@@ -10,7 +10,7 @@ $, d3, JSON, Math, location, window, ws_url */
 
 // location.host is created by js itself
 // ws_url comes from my django template
-var ws = new window.WebSocket("ws://" + location.host + ws_url);
+var ws = new window.WebSocket("ws://" + location.host + '/ws');
 
 
 //---------------------------------------------------------
