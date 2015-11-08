@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+
+<title>Web-Audio experiments</title>
+
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="/static/css/style.css">
+	
+</head>
+<body>
+
+<a href="https://github.com/Nagasaki45/Web-Audio">
+	<img style="position: absolute; top: 50; right: 0; border: 0;" src="https://github-camo.global.ssl.fastly.net/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png">
+</a>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="/">Web-Audio experiments</a>
+		</div>
+		<div class="collapse navbar-collapse">
+			<ul class="nav navbar-nav">
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Usefull links <b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li class="dropdown-header">API</li>
+						<li><a href="http://www.w3.org/TR/webaudio/" target="_blank">Web Audio API</a></li>
+						<li class="divider"></li>
+						<li class="dropdown-header">Libraries</li>
+						<li><a href="https://github.com/Dinahmoe/tuna" target="_blank">tuna - An audio effects library</a></li>
+						<li class="divider"></li>
+						<li class="dropdown-header">Learning materials</li>
+						<li><a href="http://www.html5rocks.com/en/tutorials/webaudio/intro/" target="_blank">"Getting Started with" tutorial by Boris Smus</a></li>
+						<li><a href="http://chimera.labs.oreilly.com/books/1234000001552/index.html" target="_blank">Free online book by Boris Smus</a></li>
+					</ul>
+				</li>
+			</ul>
+		</div><!--/.nav-collapse -->
+	</div>
+</div>
+
+<div id="content" class="container">
+
+<h1>My first collaborative web synth</h1>
+
+<p class="lead">
+	Showcase: shared music creation on the web. Ask a friend to open his browser to hear the magic :-)
+</p>
+
+<div class="well">
+  <div id="synth"></div>
+</div>
+
+<!-- KB properties -->
+<div class="row">
+  <div class="col-sm-6">
+    <div class="well">
+      <div class="text-center">
+        <p class="lead">Upper keyboard properties</p>
+      </div>
+      <div class="row">
+        <div class="col-xs-2"><label>Reverb</label></div>
+        <div class="col-xs-4"><input type="checkbox" name="up-verb"></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-2"><label>Oscillator</label></div>
+        <div class="col-xs-4">
+          <input type="radio" name="up-osc" value="sine" checked>Sine<br >
+          <input type="radio" name="up-osc" value="square">Square<br >
+          <input type="radio" name="up-osc" value="sawtooth">Sawtooth<br >
+          <input type="radio" name="up-osc" value="triangle">Triangle<br >
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6">
+    <div class="well">
+      <div class="text-center">
+        <p class="lead">Lower keyboard properties</p>
+      </div>
+      <div class="row">
+        <div class="col-xs-2"><label>Reverb</label></div>
+        <div class="col-xs-4"><input type="checkbox" name="low-verb"></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-2"><label>Oscillator</label></div>
+        <div class="col-xs-4">
+          <input type="radio" name="low-osc" value="sine" checked>Sine<br >
+          <input type="radio" name="low-osc" value="square">Square<br >
+          <input type="radio" name="low-osc" value="sawtooth">Sawtooth<br >
+          <input type="radio" name="low-osc" value="triangle">Triangle<br >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script type="text/javascript" src="/static/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript" src="/static/js/bootstrap.min.js""></script>
+<script type="text/javascript" src="/static/js/d3.v3.min.js"></script>
+
+<script type="text/javascript">
+	var ws_url = "/ws"
+</script>
+<script type="text/javascript" src="/static/js/synth.js"></script>
+
+</body>
+</html>
