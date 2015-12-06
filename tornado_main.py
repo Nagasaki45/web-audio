@@ -46,7 +46,8 @@ def main():
     tornado_app = tornado.web.Application(handlers, **settings)
     server = tornado.httpserver.HTTPServer(tornado_app)
     if options.unix_socket:
-        socket = tornado.netutil.bind_unix_socket('/tmp/web-audio.sock')
+        socket = tornado.netutil.bind_unix_socket('/tmp/web-audio.sock',
+                                                  mode=0o777)
         server.add_socket(socket)
     else:
         server.listen(options.port)
